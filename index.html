@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>财务自由计算器</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #c8f064;
+    --accent2: #64c8f0;
+    --accent3: #f0a064;
+    --text: #e8e8e0;
+    --muted: #6a6a60;
+    --danger: #f06464;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--text);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .subtitle {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  /* --- INPUTS --- */
+  .inputs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 560px) {
+    .inputs-grid { grid-template-columns: 1fr; }
+  }
+
+  .input-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+
+  .input-card:focus-within {
+    border-color: var(--accent);
+  }
+
+  .input-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .input-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+  }
+
+  .currency {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--muted);
+  }
+
+  input[type="number"] {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 1.6rem;
+    font-weight: 500;
+    width: 100%;
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  .input-hint {
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  /* Sliders */
+  .slider-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.25rem;
+  }
+
+  .slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.75rem;
+  }
+
+  .slider-val {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
+  }
+
+  .sliders-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 560px) {
+    .sliders-row { grid-template-columns: 1fr; }
+  }
+
+  /* --- RESULTS --- */
+  .result-banner {
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  @media (max-width: 560px) {
+    .result-banner { grid-template-columns: 1fr; }
+  }
+
+  .result-item .r-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .result-item .r-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    font-weight: 400;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .result-item .r-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.3rem;
+  }
+
+  /* explanation box */
+  .explain-box {
+    background: var(--surface2);
+    border-left: 3px solid var(--accent2);
+    padding: 1rem 1.25rem;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 2rem;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: #aaa;
+  }
+
+  .explain-box strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* Chart */
+  .chart-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .chart-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+  }
+
+  canvas {
+    width: 100% !important;
+    display: block;
+  }
+
+  .legend {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Table */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+  }
+
+  th {
+    background: var(--surface2);
+    padding: 0.75rem 1rem;
+    text-align: right;
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  th:first-child { text-align: left; }
+
+  td {
+    padding: 0.6rem 1rem;
+    text-align: right;
+    border-top: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  td:first-child { text-align: left; color: var(--muted); }
+
+  tr.highlight td {
+    background: rgba(200, 240, 100, 0.07);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  .fire-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 2px;
+    margin-left: 0.4rem;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
+  }
+
+  .not-yet {
+    color: var(--danger);
+  }
+
+  footer {
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="eyebrow">模块 4.2 × 4.3 · 通膨调整版</div>
+    <h1>你的<em>财务自由</em><br>数字是多少？</h1>
+    <p class="subtitle">考虑通膨之后，你需要的不是一个数字，而是一条会移动的目标线。<br>调整下方参数，看看你的雪球需要多久才能追上它。</p>
+  </header>
+
+  <!-- Inputs -->
+  <div class="inputs-grid">
+    <div class="input-card">
+      <div class="input-label">当前资产</div>
+      <div class="input-row">
+        <span class="currency">€</span>
+        <input type="number" id="assets" value="40000" min="0" step="1000">
+      </div>
+      <div class="input-hint">不含自住房</div>
+    </div>
+    <div class="input-card">
+      <div class="input-label">月支出（今天的钱）</div>
+      <div class="input-row">
+        <span class="currency">€</span>
+        <input type="number" id="spending" value="500" min="0" step="50">
+      </div>
+      <div class="input-hint">将按通膨每年增长</div>
+    </div>
+    <div class="input-card">
+      <div class="input-label">每月定投</div>
+      <div class="input-row">
+        <span class="currency">€</span>
+        <input type="number" id="monthly" value="500" min="0" step="50">
+      </div>
+      <div class="input-hint">假设金额固定不变</div>
+    </div>
+    <div class="input-card">
+      <div class="input-label">（仅供参考）年化名义收益率</div>
+      <div class="input-row">
+        <span class="currency"> </span>
+        <input type="number" id="nominalReturn" value="7" min="1" max="20" step="0.5">
+        <span class="currency">%</span>
+      </div>
+      <div class="input-hint">指数基金长期历史约 7%</div>
+    </div>
+  </div>
+
+  <div class="sliders-row">
+    <div class="slider-card">
+      <div class="slider-header">
+        <div class="input-label">年通膨率</div>
+        <div class="slider-val" id="inflationVal">2.0%</div>
+      </div>
+      <input type="range" id="inflation" min="0" max="6" step="0.5" value="2">
+    </div>
+    <div class="slider-card">
+      <div class="slider-header">
+        <div class="input-label">安全提取率（SWR）</div>
+        <div class="slider-val" id="swrVal">4.0%</div>
+      </div>
+      <input type="range" id="swr" min="2.5" max="5" step="0.5" value="4">
+    </div>
+  </div>
+
+  <!-- Result Banner -->
+  <div class="result-banner">
+    <div class="result-item">
+      <div class="r-label">今日自由数字</div>
+      <div class="r-value" id="fireNumberToday">—</div>
+      <div class="r-sub">按今天物价</div>
+    </div>
+    <div class="result-item">
+      <div class="r-label">达成年份</div>
+      <div class="r-value" id="fireYear">—</div>
+      <div class="r-sub" id="fireYearsAway">距今 — 年</div>
+    </div>
+    <div class="result-item">
+      <div class="r-label">届时自由数字</div>
+      <div class="r-value" id="fireNumberFuture">—</div>
+      <div class="r-sub">通膨调整后的目标</div>
+    </div>
+  </div>
+
+  <div class="explain-box" id="explainBox">
+    加载中...
+  </div>
+
+  <!-- Chart -->
+  <div class="chart-wrap">
+    <div class="chart-title">资产增长 vs 通膨调整后的目标线</div>
+    <canvas id="chart" height="300"></canvas>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#c8f064"></div>
+        你的资产（含定投+复利）
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#f06464"></div>
+        财务自由目标（随通膨上移）
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>年份</th>
+          <th>年龄 +N</th>
+          <th>你的资产</th>
+          <th>FIRE 目标</th>
+          <th>缺口</th>
+          <th>进度</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <strong>假设说明：</strong>定投金额固定不随通膨增加（保守估计）；名义年化收益率为税前；4% 法则来自 Trinity Study，假设退休期约30年；实际结果受市场波动影响，本工具仅供教育用途。
+  </footer>
+
+</div>
+
+<script>
+// ---- Chart.js minimal inline ----
+// We'll draw on canvas ourselves to avoid CDN dependencies
+
+const canvas = document.getElementById('chart');
+const ctx = canvas.getContext('2d');
+
+function fmt(n) {
+  if (n >= 1e6) return '€' + (n/1e6).toFixed(2) + 'M';
+  if (n >= 1e3) return '€' + Math.round(n/1e3) + 'K';
+  return '€' + Math.round(n);
+}
+
+function fmtFull(n) {
+  return '€' + Math.round(n).toLocaleString('de-DE');
+}
+
+function getInputs() {
+  return {
+    assets: parseFloat(document.getElementById('assets').value) || 0,
+    spending: parseFloat(document.getElementById('spending').value) || 0,
+    monthly: parseFloat(document.getElementById('monthly').value) || 0,
+    nominalReturn: parseFloat(document.getElementById('nominalReturn').value) / 100 || 0.07,
+    inflation: parseFloat(document.getElementById('inflation').value) / 100 || 0.02,
+    swr: parseFloat(document.getElementById('swr').value) / 100 || 0.04,
+  };
+}
+
+function simulate() {
+  const { assets, spending, monthly, nominalReturn, inflation, swr } = getInputs();
+
+  const realReturn = (1 + nominalReturn) / (1 + inflation) - 1;
+  const annualSpendingToday = spending * 12;
+  const fireNumberToday = annualSpendingToday / swr;
+
+  const years = [];
+  let portfolio = assets;
+  let fireYear = null;
+  let firePortfolio = null;
+  let fireTarget = null;
+  let fireIdx = null;
+
+  const MAX = 60;
+
+  for (let y = 0; y <= MAX; y++) {
+    // FIRE target inflated
+    const inflatedAnnualSpending = annualSpendingToday * Math.pow(1 + inflation, y);
+    const fireTarget_y = inflatedAnnualSpending / swr;
+
+    years.push({
+      y,
+      portfolio: Math.round(portfolio),
+      fireTarget: Math.round(fireTarget_y),
+      reached: portfolio >= fireTarget_y,
+    });
+
+    if (portfolio >= fireTarget_y && fireIdx === null) {
+      fireIdx = y;
+      fireYear = new Date().getFullYear() + y;
+      firePortfolio = portfolio;
+      fireTarget = fireTarget_y;
+    }
+
+    // Grow portfolio: annual compound + 12 monthly contributions
+    // Simplified: grow once per year, add 12*monthly
+    portfolio = portfolio * (1 + nominalReturn) + monthly * 12;
+  }
+
+  return { years, fireIdx, fireYear, firePortfolio, fireTarget, fireNumberToday, realReturn, inflation, nominalReturn, swr, spending, monthly, assets };
+}
+
+function drawChart(years, fireIdx) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width - 48; // padding
+  const H = 280;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const PAD = { top: 20, right: 20, bottom: 36, left: 64 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+
+  // Determine display range: up to fireIdx + buffer or 40 years
+  const showYears = Math.min(years.length - 1, fireIdx !== null ? fireIdx + 8 : 40);
+  const slice = years.slice(0, showYears + 1);
+
+  const maxVal = Math.max(...slice.map(d => Math.max(d.portfolio, d.fireTarget)));
+
+  const xScale = (i) => PAD.left + (i / showYears) * plotW;
+  const yScale = (v) => PAD.top + plotH - (v / maxVal) * plotH;
+
+  // Grid lines
+  ctx.strokeStyle = '#2a2a2a';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = PAD.top + (i / 4) * plotH;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + plotW, y); ctx.stroke();
+    const val = maxVal * (1 - i / 4);
+    ctx.fillStyle = '#4a4a40';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText(fmt(val), PAD.left - 6, y + 4);
+  }
+
+  // X axis labels
+  ctx.fillStyle = '#4a4a40';
+  ctx.font = '10px DM Mono, monospace';
+  ctx.textAlign = 'center';
+  const yearStep = showYears > 30 ? 10 : showYears > 15 ? 5 : 2;
+  for (let i = 0; i <= showYears; i += yearStep) {
+    ctx.fillText('Y' + i, xScale(i), H - PAD.bottom + 16);
+  }
+
+  // FIRE vertical line
+  if (fireIdx !== null && fireIdx <= showYears) {
+    ctx.strokeStyle = 'rgba(200,240,100,0.25)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(xScale(fireIdx), PAD.top);
+    ctx.lineTo(xScale(fireIdx), PAD.top + plotH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = 'rgba(200,240,100,0.8)';
+    ctx.font = '10px DM Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('FIRE', xScale(fireIdx), PAD.top + 12);
+  }
+
+  // Draw FIRE target line (red)
+  ctx.strokeStyle = '#f06464';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  slice.forEach((d, i) => {
+    const x = xScale(i);
+    const y = yScale(d.fireTarget);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Draw portfolio line (green) with fill
+  const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + plotH);
+  grad.addColorStop(0, 'rgba(200,240,100,0.3)');
+  grad.addColorStop(1, 'rgba(200,240,100,0.02)');
+
+  ctx.beginPath();
+  slice.forEach((d, i) => {
+    const x = xScale(i);
+    const y = yScale(d.portfolio);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#c8f064';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Fill
+  ctx.lineTo(xScale(slice.length - 1), PAD.top + plotH);
+  ctx.lineTo(xScale(0), PAD.top + plotH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+}
+
+function buildTable(years, fireIdx) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  // Show every year up to FIRE+5, then every 5 years
+  const showRows = [];
+  const limit = Math.min(years.length - 1, fireIdx !== null ? fireIdx + 6 : 40);
+  for (let i = 0; i <= limit; i++) {
+    if (i <= (fireIdx !== null ? fireIdx + 5 : 20)) {
+      showRows.push(i);
+    } else if (i % 5 === 0) {
+      showRows.push(i);
+    }
+  }
+
+  const currentYear = new Date().getFullYear();
+
+  showRows.forEach(i => {
+    const d = years[i];
+    const gap = d.fireTarget - d.portfolio;
+    const pct = Math.min(100, (d.portfolio / d.fireTarget * 100)).toFixed(1);
+    const isFire = i === fireIdx;
+    const tr = document.createElement('tr');
+    if (isFire) tr.className = 'highlight';
+
+    const gapCell = gap <= 0
+      ? `<span style="color:#c8f064">+${fmtFull(-gap)}</span>`
+      : `<span class="not-yet">-${fmtFull(gap)}</span>`;
+
+    tr.innerHTML = `
+      <td>${currentYear + i}${isFire ? '<span class="fire-badge">FIRE</span>' : ''}</td>
+      <td>+${i}年</td>
+      <td>${fmtFull(d.portfolio)}</td>
+      <td>${fmtFull(d.fireTarget)}</td>
+      <td>${gapCell}</td>
+      <td>${pct}%</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function update() {
+  const { years, fireIdx, fireYear, firePortfolio, fireTarget, fireNumberToday, realReturn, inflation, nominalReturn, swr, spending, monthly } = simulate();
+
+  // Banner
+  document.getElementById('fireNumberToday').textContent = fmt(fireNumberToday);
+  if (fireYear) {
+    document.getElementById('fireYear').textContent = fireYear;
+    document.getElementById('fireYearsAway').textContent = `距今 ${fireIdx} 年`;
+    document.getElementById('fireNumberFuture').textContent = fmt(fireTarget);
+  } else {
+    document.getElementById('fireYear').textContent = '60年+';
+    document.getElementById('fireYearsAway').textContent = '需要调整策略';
+    document.getElementById('fireNumberFuture').textContent = '—';
+  }
+
+  // Explain
+  const realPct = (realReturn * 100).toFixed(1);
+  const annualInvest = monthly * 12;
+  document.getElementById('explainBox').innerHTML = `
+    <strong>逻辑解释：</strong>
+    名义收益 ${(nominalReturn*100).toFixed(1)}% − 通膨 ${(inflation*100).toFixed(1)}% = 
+    <strong>真实收益率 ${realPct}%</strong>。
+    你今天的月支出 €${spending}，年化 €${(spending*12).toLocaleString('de-DE')}，
+    按 ${(swr*100).toFixed(1)}% 提取率，
+    <strong>今日自由数字 = €${Math.round(spending*12/swr).toLocaleString('de-DE')}</strong>（年支出 × ${Math.round(1/swr)}倍）。
+    但由于通膨，这条目标线每年抬升 ${(inflation*100).toFixed(1)}%，
+    ${fireIdx ? `你的资产预计在第 <strong>${fireIdx} 年（${fireYear}年）</strong>追上并越过它。` : '在60年内资产尚未追上目标——考虑增加定投或调整支出。'}
+    每月定投 €${monthly} = 年投入 €${annualInvest.toLocaleString('de-DE')}，在复利加速下贡献显著。
+  `;
+
+  drawChart(years, fireIdx);
+  buildTable(years, fireIdx);
+}
+
+// Event listeners
+['assets','spending','monthly','nominalReturn'].forEach(id => {
+  document.getElementById(id).addEventListener('input', update);
+});
+
+document.getElementById('inflation').addEventListener('input', function() {
+  document.getElementById('inflationVal').textContent = parseFloat(this.value).toFixed(1) + '%';
+  update();
+});
+
+document.getElementById('swr').addEventListener('input', function() {
+  document.getElementById('swrVal').textContent = parseFloat(this.value).toFixed(1) + '%';
+  update();
+});
+
+window.addEventListener('resize', () => {
+  const { years, fireIdx } = simulate();
+  drawChart(years, fireIdx);
+});
+
+// Init
+update();
+</script>
+</body>
+</html>
+
