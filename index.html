@@ -368,9 +368,9 @@
 <div class="container">
 
   <header>
-    <div class="eyebrow"></div>
+    <div class="eyebrow">财务自由计算器 · 通胀调整版</div>
     <h1>你的<em>财务自由</em><br>数字是多少？</h1>
-    <p class="subtitle">你需要多少钱才能提前退休？这个计算器是考虑通膨之后，生成一条会移动的目标线。<br>调整下方参数，看看你的雪球需要多久才能追上它。</p>
+    <p class="subtitle">财务自由，意味着你的投资收益足以覆盖生活开支，从此工作变成选择而非必须。这个计算器基于 FIRE 运动的核心方法——<strong style="color:var(--text)">4% 法则</strong>——帮你算出需要积累多少资产、需要多少年才能实现目标。<br><br>与普通计算器不同，这里加入了<strong style="color:var(--text)">通胀因素</strong>：你的目标金额会随物价每年上升，而你的资产也在复利中持续增长。输入你的当前资产、每月支出与定投金额，看看两条线何时相交。</p>
   </header>
 
   <!-- Inputs -->
@@ -416,7 +416,7 @@
         <div class="input-label">年通膨率</div>
         <div class="slider-val" id="inflationVal">2.0%</div>
       </div>
-      <input type="range" id="inflation" min="0" max="6" step="0.5" value="2">
+      <input type="range" id="inflation" min="0" max="20" step="0.5" value="2">
     </div>
     <div class="slider-card">
       <div class="slider-header">
@@ -758,4 +758,3 @@ update();
 </script>
 </body>
 </html>
-
